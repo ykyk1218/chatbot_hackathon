@@ -1,5 +1,4 @@
 #development:
-  <<: *default
   adapter: myaql
   encoding: unicode
   host: localhost
@@ -8,7 +7,6 @@
   password: 
 
 staging:
-  <<: *default
   adapter: mysql 
   encoding: unicode
   host:     
@@ -18,7 +16,6 @@ staging:
 
 
 production:
-  <<: *default
   url: <%= ENV['DATABASE_URL'] %>
   adapter: mysql
   encoding: unicode
