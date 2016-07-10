@@ -75,6 +75,12 @@ class WebhookController < ApplicationController
       if message_text == "hogehoge"
         response_text = "fugafuga"
         # message_textとresponse_textをDBに保存
+      elsif message_text == "性別おしえてー"
+        response_text = "身長おしえて"
+        
+      elsif message_text == "身長おしえてー"
+      elsif message_text == "体重おしえてー"
+      elsif message_text == "年代をおしえてー"
       else
 
         response_text = "piyopiyo"
@@ -95,6 +101,13 @@ class WebhookController < ApplicationController
 
   def proposal_lunch(category)
     # userlocalのapiを叩いて商品を検索して返す
+
+  end
+
+
+  def regist_user
+    
+    
 
   end
     
