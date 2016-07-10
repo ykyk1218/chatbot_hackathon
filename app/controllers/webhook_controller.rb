@@ -26,12 +26,13 @@ class WebhookController < ApplicationController
     from_mid =result['content']['from']
 
     # 直前の質問 * 回答
+    #
+    # 会話ログをmidで検索して、更新日順にソートして1件目を取得
+    response_text = create_response_text(from_mid, text_message)
+     
     # 返答
-
-
-
     client = LineClient.new(CHANNEL_ID, CHANNEL_SECRET, CHANNEL_MID, OUTBOUND_PROXY)
-    res = client.send([from_mid], text_message)
+    res = client.send([from_mid], response_text)
 
     if res.status == 200
       logger.info({success: res})
@@ -42,6 +43,35 @@ class WebhookController < ApplicationController
   end
 
   private
+  def create_response_text(from_mid, user_text)
+    conversation_log = ConversationLog.find_by(line_mid: from_mid).order('created_at DESC')
+    message_text = conversation_log["message_text"]
+
+    ActiveRecord::Base.transaction do
+      user_conversation= ConversationLog.new(line_mid: from_mid, message_text: user_text)
+      user_conversation.save
+
+      if message_text == "hogehoge"
+        response_text = "fugafuga"
+        # message_textとresponse_textをDBに保存
+      else
+
+        response_text = "piyopiyo"
+
+      end
+      bot_conversation = ConversationLog.new(line_mid: 0000, message_text: response_text)
+      bot_conversation.save
+    end
+
+      logger.info "会話ログの更新成功"
+    rescue =>e
+      response_text = e.mesage
+    end
+
+    response_text
+    
+  end
+
   # LINEからのアクセスか確認.
   # 認証に成功すればtrueを返す。
   # ref) https://developers.line.me/bot-api/getting-started-with-bot-api-trial#signature_validation
