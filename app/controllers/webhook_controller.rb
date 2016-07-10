@@ -76,7 +76,6 @@ class WebhookController < ApplicationController
       logger.info "会話ログの更新成功"
     rescue =>e
       response_text = e.mesage
-    end
 
     response_text
     
