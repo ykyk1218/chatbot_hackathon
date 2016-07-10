@@ -35,7 +35,7 @@ class WebhookController < ApplicationController
   def lunch_cal
     return unless params[:key] = "hogehoge123456"
     client = LineClient.new(CHANNEL_ID, CHANNEL_SECRET, CHANNEL_MID, OUTBOUND_PROXY)
-    res = client.send(User.members.pluck(:line_mid), text_message) # TODO: userモデルにscopeで有効memberに絞込
+    res = client.send(User.all.pluck(:line_mid), text_message)
     res_check res
     render :nothing => true, status: :ok
   end
