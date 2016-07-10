@@ -9,6 +9,7 @@ class WebhookController < ApplicationController
   OUTBOUND_PROXY = ENV['LINE_OUTBOUND_PROXY']
 
   def callback
+    require('lib/line_client.rb')
     unless is_validate_signature
       render :nothing => true, status: 470
     end
