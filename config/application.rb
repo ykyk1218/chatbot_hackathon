@@ -1,4 +1,5 @@
 require_relative 'boot'
+require './lib/line_client.rb'
 
 require 'rails/all'
 
