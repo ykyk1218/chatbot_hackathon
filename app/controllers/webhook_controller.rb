@@ -20,40 +20,18 @@ class WebhookController < ApplicationController
     # 友だちになった時(ブロック解除含む)
     if LineClient::EVENT_ID_OP == result['eventType'] \
       && LineClient::FREND_CONNECTION == result['content']['opType']
-      user_line_mid = result['from']
-      user = User.find_or_create_by(line_mid: user_line_mid)
-
-      # はじめまして 等
-      first_send_msgs = MasterQuestion.where(id: 1..3)
-      ress = []
-      first_send_msgs.each do |q|
-        ress.concat client.send([user_line_mid], q.question_text)
-      end
-      ress.each{|r| res_check r}
-
-    # 会話ログをmidで検索して、更新日順にソートして1件目を取得
-    response_text = create_response_text(from_mid, text_message)
-     
-    # 返答
-    client = LineClient.new(CHANNEL_ID, CHANNEL_SECRET, CHANNEL_MID, OUTBOUND_PROXY)
-    res = client.send([from_mid], response_text)
-
+      first_communication result
     # ユーザーからメッセージ
     elsif LineClient::EVENT_ID_MSG == result['eventType']
-      user = User.find_by(line_mid: result['content']['from'])
-
-      # 直前の質問 * 回答
-      text_message = result['content']['text']
-      # 返答
-      res = client.send([user.line_mid], text_message)
-      res_check res
+      communication　result
     end
 
     render :nothing => true, status: :ok
   end
 
-  # /lunch_cal?key=hogehoge123456
-  # lunch時にメッセージ一斉送信
+
+
+  # lunch時にメッセージ一斉送信 url : /lunch_cal?key=hogehoge123456
   def lunch_cal
     return unless params[:key] = "hogehoge123456"
     client = LineClient.new(CHANNEL_ID, CHANNEL_SECRET, CHANNEL_MID, OUTBOUND_PROXY)
@@ -61,6 +39,7 @@ class WebhookController < ApplicationController
     res_check res
     render :nothing => true, status: :ok
   end
+
 
 
   private
@@ -76,9 +55,7 @@ class WebhookController < ApplicationController
         response_text = "fugafuga"
         # message_textとresponse_textをDBに保存
       else
-
         response_text = "piyopiyo"
-
 
       end
       bot_conversation = ConversationLog.new(line_mid: 0000, message_text: response_text)
@@ -93,11 +70,49 @@ class WebhookController < ApplicationController
     
   end
 
+
   def proposal_lunch(category)
     # userlocalのapiを叩いて商品を検索して返す
 
   end
+
+
+  # はじめまして + 最初の質問
+  def first_communication result
+    user_line_mid = result['from']
+    user = User.find_or_create_by(line_mid: user_line_mid)
+
     
+    first_send_msgs = MasterQuestion.where(id: 1..3)
+    ress = []
+    first_send_msgs.each do |q|
+      ress.concat client.send([user_line_mid], q.question_text)
+    end
+    ress.each{|r| res_check r}
+  end
+
+
+  # ユーザーからのメッセージに対して返答
+  def communication result
+    user = User.find_by(line_mid: result['content']['from'])
+    text_message = result['content']['text']
+
+    # 会話ログをmidで検索して、更新日順にソートして1件目を取得
+    response_text = create_response_text(user.line_mid, text_message)
+    res = client.send([user.line_mid], response_text)
+    res_check res
+  end
+
+
+  def res_check res
+    if res.status == 200
+      logger.info({success: res})
+    else
+      logger.info({fail: res})
+    end
+  end
+
+
   # LINEからのアクセスか確認.
   # 認証に成功すればtrueを返す。
   # ref) https://developers.line.me/bot-api/getting-started-with-bot-api-trial#signature_validation
@@ -107,14 +122,6 @@ class WebhookController < ApplicationController
     hash = OpenSSL::HMAC::digest(OpenSSL::Digest::SHA256.new, CHANNEL_SECRET, http_request_body)
     signature_answer = Base64.strict_encode64(hash)
     signature == signature_answer
-  end
-
-  def res_check res
-    if res.status == 200
-      logger.info({success: res})
-    else
-      logger.info({fail: res})
-    end
   end
 end
 
