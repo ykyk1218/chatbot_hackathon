@@ -20,7 +20,7 @@ class WebhookController < ApplicationController
     # 友だちになった時(ブロック解除含む)
     if LineClient::EVENT_ID_OP == result['eventType'] \
       && LineClient::FREND_CONNECTION == result['content']['opType']
-      first_communication result
+      first_communication result, client
     # ユーザーからメッセージ
     elsif LineClient::EVENT_ID_MSG == result['eventType']
       communication　result
@@ -89,7 +89,7 @@ class WebhookController < ApplicationController
   end
 
   # はじめまして + 最初の質問
-  def first_communication result
+  def first_communication result, client
     user_line_mid = result['from']
     user = User.find_or_create_by(line_mid: user_line_mid)
 
