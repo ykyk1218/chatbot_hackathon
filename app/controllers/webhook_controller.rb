@@ -14,30 +14,35 @@ class WebhookController < ApplicationController
     end
     result = params[:result][0]
     logger.info({from_line: result})
-
-
-    # 新規登録の場合――――――――――――――――――――――――
-    # ユーザー属性を確認してuser テーブルに保存
-
-
-    # ユーザーから返信の場合――――――――――――――――――――――――
-
-    text_message = result['content']['text']
-    from_mid =result['content']['from']
-
-    # 直前の質問 * 回答
-    # 返答
-
-
-
     client = LineClient.new(CHANNEL_ID, CHANNEL_SECRET, CHANNEL_MID, OUTBOUND_PROXY)
-    res = client.send([from_mid], text_message)
 
-    if res.status == 200
-      logger.info({success: res})
-    else
-      logger.info({fail: res})
+    # 友だちになった時(ブロック解除含む)
+    if LineClient::EVENT_ID_OP == result['eventType'] \
+      && LineClient::FREND_CONNECTION == result['content']['opType']
+      user_line_mid = result['from']
+      user = User.find_or_create_by(line_mid: user_line_mid)
+
+      # はじめまして 等
+      first_send_msgs = MasterQuestion.where(id: 1..3)
+      ress = []
+      first_send_msgs.each do |q|
+        ress.concat client.send([user.line_mid], q.question_text)
+      end
+      ress.each{|r| res_check r}
+
+
+    # ユーザーからメッセージ
+    elsif LineClient::EVENT_ID_MSG == result['eventType']
+      user = User.find_by(line_mid: result['content']['from'])
+
+      # 直前の質問 * 回答
+      text_message = result['content']['text']
+      # 返答
+      res = client.send([user.line_mid], text_message)
+      res_check res
     end
+
+
     render :nothing => true, status: :ok
   end
 
@@ -52,4 +57,13 @@ class WebhookController < ApplicationController
     signature_answer = Base64.strict_encode64(hash)
     signature == signature_answer
   end
+
+  def res_check res
+    if res.status == 200
+      logger.info({success: res})
+    else
+      logger.info({fail: res})
+    end
+  end
 end
+
