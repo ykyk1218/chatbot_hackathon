@@ -14,8 +14,21 @@ class WebhookController < ApplicationController
     end
     result = params[:result][0]
     logger.info({from_line: result})
+
+
+    # 新規登録の場合――――――――――――――――――――――――
+    # ユーザー属性を確認してuser テーブルに保存
+
+
+    # ユーザーから返信の場合――――――――――――――――――――――――
+
     text_message = result['content']['text']
     from_mid =result['content']['from']
+
+    # 直前の質問 * 回答
+    # 返答
+
+
 
     client = LineClient.new(CHANNEL_ID, CHANNEL_SECRET, CHANNEL_MID, OUTBOUND_PROXY)
     res = client.send([from_mid], text_message)
