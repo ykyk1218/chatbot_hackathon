@@ -97,7 +97,7 @@ class WebhookController < ApplicationController
     first_send_msgs = MasterQuestion.where(id: 1..3)
     ress = []
     first_send_msgs.each do |q|
-      logger.info q.question_text
+      logger.info user_line_mid
       # ress.concat client.send([user_line_mid], q.question_text)
       client.send([user_line_mid], q.question_text)
     end
