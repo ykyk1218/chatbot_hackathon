@@ -8,6 +8,7 @@ class WebhookController < ApplicationController
   CHANNEL_MID = ENV['LINE_CHANNEL_MID']
   OUTBOUND_PROXY = ENV['LINE_OUTBOUND_PROXY']
 
+
   def callback
     unless is_validate_signature
       render :nothing => true, status: 470
@@ -26,7 +27,7 @@ class WebhookController < ApplicationController
       first_send_msgs = MasterQuestion.where(id: 1..3)
       ress = []
       first_send_msgs.each do |q|
-        ress.concat client.send([user.line_mid], q.question_text)
+        ress.concat client.send([user_line_mid], q.question_text)
       end
       ress.each{|r| res_check r}
 
@@ -50,6 +51,17 @@ class WebhookController < ApplicationController
 
     render :nothing => true, status: :ok
   end
+
+  # /lunch_cal?key=hogehoge123456
+  # lunch時にメッセージ一斉送信
+  def lunch_cal
+    return unless params[:key] = "hogehoge123456"
+    client = LineClient.new(CHANNEL_ID, CHANNEL_SECRET, CHANNEL_MID, OUTBOUND_PROXY)
+    res = client.send(User.members.pluck(:line_mid), text_message) # TODO: userモデルにscopeで有効memberに絞込
+    res_check res
+    render :nothing => true, status: :ok
+  end
+
 
   private
   def create_response_text(from_mid, user_text)
