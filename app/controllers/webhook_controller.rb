@@ -58,6 +58,7 @@ class WebhookController < ApplicationController
 
         response_text = "piyopiyo"
 
+
       end
       bot_conversation = ConversationLog.new(line_mid: 0000, message_text: response_text)
       bot_conversation.save
@@ -72,6 +73,11 @@ class WebhookController < ApplicationController
     
   end
 
+  def proposal_lunch(category)
+    # userlocalのapiを叩いて商品を検索して返す
+
+  end
+    
   # LINEからのアクセスか確認.
   # 認証に成功すればtrueを返す。
   # ref) https://developers.line.me/bot-api/getting-started-with-bot-api-trial#signature_validation
