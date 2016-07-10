@@ -31,11 +31,12 @@ class WebhookController < ApplicationController
 
 
 
-  # lunch時にメッセージ一斉送信 url : /lunch_cal?key=hogehoge123456
+  # lunch時にメッセージ一斉送信 ex: /lunch_cal?key=hogehoge123456&action=before
   def lunch_cal
     return unless params[:key] = "hogehoge123456"
     client = LineClient.new(CHANNEL_ID, CHANNEL_SECRET, CHANNEL_MID, OUTBOUND_PROXY)
-    res = client.send(User.all.pluck(:line_mid), text_message)
+    msg = params[:action] == before ? "そろそろお腹すいた？？" : "何を食べたの？？"
+    res = client.send(User.all.pluck(:line_mid), msg)
     res_check res
     render :nothing => true, status: :ok
   end
