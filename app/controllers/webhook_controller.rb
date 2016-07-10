@@ -35,7 +35,7 @@ class WebhookController < ApplicationController
   def lunch_cal
     return unless params[:key] = "hogehoge123456"
     client = LineClient.new(CHANNEL_ID, CHANNEL_SECRET, CHANNEL_MID, OUTBOUND_PROXY)
-    msg = params[:action] == before ? "そろそろお腹すいた？？" : "何を食べたの？？"
+    msg = params[:action] == "before" ? "そろそろお腹すいた？？" : "何を食べたの？？"
     res = client.send(User.all.pluck(:line_mid), msg)
     res_check res
     render :nothing => true, status: :ok
