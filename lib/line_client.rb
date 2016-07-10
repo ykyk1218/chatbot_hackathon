@@ -23,6 +23,7 @@ class LineClient
   EVENT_ID_SEND = "138311608800106203" # this is fixed value
   EVENT_ID_MSG = "138311609000106303"
   EVENT_ID_OP = "138311609100106403"
+  FREND_CONNECTION = 4
 
   def initialize(channel_id, channel_secret, channel_mid, proxy = nil)
     @channel_id = channel_id
